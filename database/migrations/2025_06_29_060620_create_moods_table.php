@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('moods', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->enum('mood_type', ['Happy', 'Sad', 'Angry', 'Excited']);
+            $table->text('note')->nullable();
+            $table->date('date');
+            $table->softDeletes();
             $table->timestamps();
+            $table->unique(['user_id', 'date']);
         });
     }
 
