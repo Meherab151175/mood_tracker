@@ -72,4 +72,23 @@ class MoodController extends Controller
         $mood->restore();
         return response()->json($mood);
     }
+
+    public function weeklyMoodSummary(){
+        $startOfWeek = now()->startOfWeek();
+        $endOfWeek = now()->endOfWeek();
+
+        $weeklyMoods = auth()->user()->moods()
+            ->whereBetween('date', [$startOfWeek, $endOfWeek])
+            ->get()
+            ->groupBy('mood_type')
+            ->map(function ($moods) {
+                return $moods->count();
+            });
+
+        return response()->json([
+            'start_date' => $startOfWeek->format('Y-m-d'),
+            'end_date' => $endOfWeek->format('Y-m-d'),
+            'mood_counts' => $weeklyMoods,
+        ]);
+    }
 }
