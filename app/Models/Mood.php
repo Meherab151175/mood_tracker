@@ -25,4 +25,14 @@ class Mood extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public static function getMoodOfTheMonth($userId)
+    {
+        return static::where('user_id', $userId)
+            ->where('date', '>=', now()->subDays(30))
+            ->select('mood_type', DB::raw('count(*) as total'))
+            ->groupBy('mood_type')
+            ->orderByDesc('total')
+            ->first();
+    }
 }

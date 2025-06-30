@@ -11,8 +11,15 @@ class MoodController extends Controller
 {
     public function index()
     {
-        $moods = Auth::user()->moods()->orderBy('date', 'desc')->get();
-        return response()->json($moods);
+        $user = Auth::user();
+        $moods = $user->moods()
+            ->orderBy('date', 'desc')
+            ->get();
+    
+        $hasStreak = $user->hasConsecutiveMoods(3);
+        $streakCount = $user->currentStreak();
+    
+        return view('moods.index', compact('moods', 'hasStreak', 'streakCount'));
     }
 
     public function store(Request $request)
@@ -91,4 +98,27 @@ class MoodController extends Controller
             'mood_counts' => $weeklyMoods,
         ]);
     }
+
+    public function moodOfTheMonth()
+{
+    $user = Auth::user();
+    $moodOfTheMonth = Mood::getMoodOfTheMonth($user->id);
+
+    if (!$moodOfTheMonth) {
+        return response()->json([
+            'message' => 'No moods recorded in the last 30 days',
+            'mood' => null,
+            'count' => 0
+        ]);
+    }
+
+    return response()->json([
+        'message' => 'Most frequent mood in the last 30 days',
+        'mood' => $moodOfTheMonth->mood_type,
+        'count' => $moodOfTheMonth->total,
+        'percentage' => round(($moodOfTheMonth->total / $user->moods()
+            ->where('date', '>=', now()->subDays(30))
+            ->count()) * 100, 1)
+    ]);
+}
 }

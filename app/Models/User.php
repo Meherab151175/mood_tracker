@@ -6,7 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Models\Mood;
+use App\Models\Mood;
 
 class User extends Authenticatable
 {
@@ -49,5 +49,43 @@ class User extends Authenticatable
     public function moods()
     {
         return $this->hasMany(Mood::class);
+    }
+
+    public function hasConsecutiveMoods($days)
+    {
+        $latestMoods = $this->moods()
+            ->orderBy('date', 'desc')
+            ->take($days)
+            ->get();
+
+        if ($latestMoods->count() < $days) {
+            return false;
+        }
+
+        $currentDate = now()->startOfDay();
+        foreach ($latestMoods as $mood) {
+            if ($mood->date->startOfDay()->ne($currentDate)) {
+                return false;
+            }
+            $currentDate = $currentDate->subDay();
+        }
+
+        return true;
+    }
+
+    public function currentStreak()
+    {
+        $streak = 0;
+        $currentDate = now()->startOfDay();
+        
+        while (true) {
+            if (!$this->moods()->whereDate('date', $currentDate)->exists()) {
+                break;
+            }
+            $streak++;
+            $currentDate = $currentDate->subDay();
+        }
+
+        return $streak;
     }
 }
