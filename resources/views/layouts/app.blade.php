@@ -86,7 +86,7 @@
     <!-- Footer -->
     <footer class="footer  mt-auto py-3 bg-dark text-white">
         <div class="container text-center">
-            <span>© {{ date('Y') }} Mood Tracker. All rights reserved.</span>
+            <span>© {{ date('Y') }} Mood Tracker.Created by Meherab. All rights reserved.</span>
         </div>
     </footer>
 
